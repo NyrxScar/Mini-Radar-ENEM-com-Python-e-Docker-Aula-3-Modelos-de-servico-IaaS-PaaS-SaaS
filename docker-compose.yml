@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  web_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      # Variável crucial: ensina o site principal onde está a calculadora.
+      - CALCULADORA_URL=http://host.docker.internal:8000/api/CalculaNota
+    networks:
+      - radar_network
+
+  locust_tester:
+    image: locustio/locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./locustfile.py:/mnt/locust/locustfile.py
+    command: -f /mnt/locust/locustfile.py --host http://host.docker.internal:8000
+    networks:
+      - radar_network
+
+networks:
+  radar_network:
+    driver: bridge
